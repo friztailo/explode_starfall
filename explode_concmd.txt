@@ -3,7 +3,7 @@ if CLIENT and player() == owner() then
     local Code = 'concmd("say test")'
     local Loop = false
 
-    local title = "explode_concmd by friztailo feat. valera 41"
+    local title = "explode_concmd by Friztailo"
 
     local resX, resY = gui:getResolution()
     local ratio = resX / resY
@@ -59,6 +59,7 @@ if CLIENT and player() == owner() then
 
     Label.listbox = gui:addComponent("listbox", 0, Label:getDragSize()[2], resX/3/3, resY/3 - Label:getDragSize()[2])
     Label.listbox:setParent(Label)
+    Label.listbox:createSlider(Label.listbox:getW() - 15, 0, 15, Label.listbox:getH(), key)
 
     net.receive("toOwnerPerms",function()
         local bool = net.readBit() == 1 and true or false
