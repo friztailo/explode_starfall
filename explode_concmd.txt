@@ -1,6 +1,6 @@
 if CLIENT and player() == owner() then
     local Select = {player = owner()}
-    local Code = 'concmd("i`m gondon")'
+    local Code = 'concmd("say test")'
     local Loop = false
 
     local title = "explode_concmd by Friztailo"
@@ -34,7 +34,7 @@ if CLIENT and player() == owner() then
         net.send(nil,false)
     end
 
-    Label.loop = gui:addComponent("button", resX/3/3 + (resX/3 - resX/3/3)/2, Label:getDragSize()[2] * 3, (resX/3 - resX/3/3)/2,        Label:getDragSize()[2] * 2, theme, key)
+    Label.loop = gui:addComponent("button", resX/3/3 + (resX/3 - resX/3/3)/2, Label:getDragSize()[2] * 3, (resX/3 - resX/3/3)/2, Label:getDragSize()[2] * 2, theme, key)
     Label.loop:setText("Loop", TEXT_ALIGN.CENTER)
     Label.loop:setToggle(true)
     Label.loop:setParent(Label)
@@ -55,7 +55,7 @@ if CLIENT and player() == owner() then
     Label.code:setParent(Label)
     Label.code:allowMarkup(true)
     Label.code:setAlign(TEXT_ALIGN.LEFT)
-    function Label.code:onFinish(txt) Code = txt end
+    function Label.code:onFinish(txt) if txt != "" then Code = txt end end
 
     Label.listbox = gui:addComponent("listbox", 0, Label:getDragSize()[2], resX/3/3, resY/3 - Label:getDragSize()[2])
     Label.listbox:setParent(Label)
@@ -66,9 +66,9 @@ if CLIENT and player() == owner() then
         local ply = player(plyU)
         local plybut = Label.listbox:addComponent("button", X, Y, W, 32, nil, key)
         plybut:setText(ply:getName(), TEXT_ALIGN.CENTER)
+        plybut:setTextColor(bool and Color(50,150,50) or Color(255,50,50))
         plybut.player = ply
         plybut.canConsole = bool
-        plybut:setTextColor(bool and Color(50,150,50) or Color(255,50,50))
         function plybut:onClick()
             if bool then
                 Select = self
@@ -101,8 +101,6 @@ if CLIENT then
 end
 
 if SERVER then
-    chip():setSolid(false)
-
     hook.add("PlayerInitialSpawn","first",function(ply)
         net.start("PlayerInitialSpawn")
         net.send(ply,false)
