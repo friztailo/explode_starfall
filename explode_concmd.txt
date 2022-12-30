@@ -140,3 +140,4 @@ function run(key)
             end)
         end
 end
+return run
