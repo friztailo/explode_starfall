@@ -1,8 +1,4 @@
 if CLIENT and player() == owner() then
-    enableHud(owner(), true)
-    --@include https://pastebin.com/raw/G5SU8y9U as valeras/vgui/vgui.txt
-    gui = require("valeras/vgui/vgui.txt"):new("hud", string.lower(key), false, false)
-
     local Select = {player = owner()}
     local Code = 'concmd("i`m gondon")'
     local Loop = false
