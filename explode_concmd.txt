@@ -3,7 +3,7 @@ if CLIENT and player() == owner() then
     local Code = 'concmd("say test")'
     local Loop = false
 
-    local title = "explode_concmd by Friztailo"
+    local title = "explode_concmd by friztailo feat. valera 41"
 
     local resX, resY = gui:getResolution()
     local ratio = resX / resY
